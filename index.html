@@ -1,45 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>For Kelly</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #fafafa;
-      color: #222;
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 20px;
-      line-height: 1.6;
-    }
-    img {
-      width: 100%;
-      border-radius: 12px;
-      margin: 20px 0;
-    }
-    h1 {
-      font-weight: 500;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>For Kelly</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+body {
+font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+background: #fafafa;
+color: #222;
+max-width: 720px;
+margin: 40px auto;
+padding: 20px;
+line-height: 1.6;
+}
+
+h1 { font-weight: 500; margin-bottom: 6px; }
+.sub { color: #666; margin-top: 0; }
+
+/* 1) Image half size (roughly) */
+img.hero {
+width: 50%;
+max-width: 320px;
+min-width: 180px;
+display: block;
+margin: 22px auto 16px;
+border-radius: 12px;
+}
+
+.question {
+text-align: center;
+font-size: 1.1rem;
+margin: 12px 0 18px;
+}
+
+.btn-row {
+display: flex;
+justify-content: center;
+gap: 14px;
+margin-top: 10px;
+position: relative;
+min-height: 54px; /* keeps layout stable when buttons move */
+}
+
+button {
+border: 0;
+padding: 12px 16px;
+border-radius: 999px;
+font-size: 1rem;
+cursor: pointer;
+box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+transition: transform 0.15s ease;
+user-select: none;
+-webkit-tap-highlight-color: transparent;
+}
+button:active { transform: scale(0.98); }
+
+#yesBtn { background: #111; color: #fff; }
+#noBtn { background: #fff; color: #111; border: 1px solid #ddd; }
+
+/* 3) "Hell No" dancing left/right once every 1s */
+@keyframes wiggle {
+0% { transform: translateX(-10px); }
+50% { transform: translateX(10px); }
+100% { transform: translateX(-10px); }
+}
+.dance {
+animation: wiggle 1s ease-in-out infinite;
+}
+
+/* 3) Reveal line slowly */
+#reveal {
+text-align: center;
+opacity: 0;
+max-height: 0;
+overflow: hidden;
+transition: opacity 1.2s ease, max-height 1.2s ease;
+margin-top: 18px;
+font-size: 1.1rem;
+}
+#reveal.show {
+opacity: 1;
+max-height: 200px;
+}
+
+.footer {
+text-align: center;
+color: #666;
+margin-top: 26px;
+font-size: 0.95rem;
+}
+</style>
 </head>
+
 <body>
-
 <h1>For Kelly</h1>
-<p>February 14 · Tokyo</p>
+<p class="sub">February · Tokyo</p>
 
-<img src="images/photo1.jpg" alt="Us">
+<img class="hero" src="images/photo1.jpg" alt="Us" />
 
-<p>
-I wanted to make something simple.
-No expectations, no pressure.
-Just a small moment, captured.
-</p>
+<!-- 2) Updated phrase -->
+<div class="question">
+would you like to accept the invitation from Han to travel the world this year ?
+</div>
 
-<p>
-— Han
-</p>
+<!-- 2) Buttons -->
+<div class="btn-row" id="btnRow">
+<button id="yesBtn">Hell Yes ❤️</button>
+<button id="noBtn" class="dance">Hell No 🚫</button>
+</div>
 
+<!-- 3) Show after yes -->
+<div id="reveal">Can’t wait to see the world with you🌎🌍🌏</div>
+
+<div class="footer">— Han</div>
+
+<script>
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const btnRow = document.getElementById("btnRow");
+const reveal = document.getElementById("reveal");
+
+// 3) Yes button: hide buttons, reveal message
+yesBtn.addEventListener("click", () => {
+btnRow.style.display = "none";
+// allow layout to settle then animate in
+setTimeout(() => reveal.classList.add("show"), 150);
+});
+
+// 3) No button: "dodges" clicks by teleporting left/right
+// We keep it within the button row boundaries.
+function dodge() {
+const rowRect = btnRow.getBoundingClientRect();
+const btnRect = noBtn.getBoundingClientRect();
+
+// available horizontal travel space
+const maxLeft = 0;
+const maxRight = Math.max(0, rowRect.width - btnRect.width);
+
+// current left offset (relative)
+const currentLeft = parseFloat(noBtn.dataset.left || "0");
+
+// pick a direction and jump distance
+const dir = Math.random() < 0.5 ? -1 : 1;
+const jump = 80 + Math.random() * 80; // 80–160px
+let nextLeft = currentLeft + dir * jump;
+
+// clamp so it stays inside the row
+if (nextLeft < maxLeft) nextLeft = maxLeft;
+if (nextLeft > maxRight) nextLeft = maxRight;
+
+noBtn.style.position = "relative";
+noBtn.style.left = nextLeft + "px";
+noBtn.dataset.left = String(nextLeft);
+}
+
+// On click, dodge instantly (illusion it doesn't want to be clicked)
+noBtn.addEventListener("click", (e) => {
+e.preventDefault();
+dodge();
+});
+
+// Also dodge when they try to press/hover it (helps on desktop)
+noBtn.addEventListener("mouseenter", dodge);
+noBtn.addEventListener("touchstart", () => {
+// On mobile, move at touch start so it's hard to tap
+dodge();
+}, { passive: true });
+</script>
 </body>
 </html>
